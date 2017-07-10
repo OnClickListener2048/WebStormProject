@@ -45,16 +45,20 @@
 <input type="text" readonly="readonly" id="lnglat" style="width:500px; height:20px;">
 <div class="button_group" id="button_group" style="padding-top: 20px;width: auto;height: auto">
     <div style="float: left;width: auto;height: auto;padding-right: 20px">
+
         <button class="btn_add" onclick="addArea()" style="width: 100px; height: 40px;">新增区域</button>
         <br>
         <button class="drawArea" style="width: 100px; height: 40px; display: none">画面</button>
         <br>
+
         <button class="confirm" style="width: 100px; height: 40px; display: none">确认新增区域</button>
     </div>
 
     <div id="change" style="float: left;width: auto;height: auto; padding-left: 100px">
+
         <button id="confirmChange" style="width: 100px; height: 40px; display: none">确认修改</button>
     </div>
+
 
 </div>
 <script>
@@ -90,9 +94,11 @@
     var flag = false;
     var judgeArray = new Array();
     var addArea = function () {
+
         markerArray = new Array();
         lnglatArray = new Array();
         $('.drawArea').show();
+
         AMap.service('AMap.Geocoder', function () {//回调函数
             //实例化Geocoder
             geocoder = new AMap.Geocoder({
@@ -129,6 +135,7 @@
         drawArea();
     };
     var changeArea = function () {
+
         $("#confirmChange").show();
         polygon.off('click', showWindow, 20);
         hideInfoWindow();
@@ -137,13 +144,16 @@
             marker.show();
         }
         flag = true;
+
     };
     var deleteArea = function () {
+
         var confirmResult = confirm("确认删除区域？");
         if (confirmResult === true) {
             polygon.setMap(null);
             hideInfoWindow();
         }
+
     };
     $('.drawArea').click(function () {
         drawArea();
@@ -179,6 +189,7 @@
         }
         $('.confirm').show();
         polygon.on('click', showWindow, 20);
+
     };
 
     function showWindow(e) {
@@ -203,12 +214,14 @@
         infoWindow.open(map, e.lnglat);
     };
 
+
     $("#confirmChange").click(function () {
         polygon.on('click', showWindow, 20);
         $("#confirmChange").hide();
         $('.drawArea').hide();
         $('.confirm').hide();
         for (var i = 0; i < markerArray.length; i++) {
+
             var marker = markerArray[i];
             marker.hide();
         }
