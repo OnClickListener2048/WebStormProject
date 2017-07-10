@@ -23,7 +23,7 @@
 </head>
 <body>
 
-<form class="form-inline">
+<form class="form-inline" style="padding: 20px">
     <div id="distpicker2" data-toggle="distpicker">
         <div class="form-group">
             <label class="sr-only" for="province1">Province</label>
@@ -41,26 +41,27 @@
     </div>
 </form>
 
-<div id="container" style="width:500px; height:300px"></div>
+<div id="container" style="width:500px; height:300px; padding: 30px;padding-left: 30px;"></div>
 <input type="text" readonly="readonly" id="lnglat" style="width:500px; height:20px;">
-<div class="button_group" id="button_group">
-    <div style="float: left;width: 40px;height: 20px;padding-right: 20px">
+<div class="button_group" id="button_group" style="padding-top: 20px;width: auto;height: auto">
+    <div style="float: left;width: auto;height: auto;padding-right: 20px">
         <button class="btn_add" onclick="addArea()" style="width: 100px; height: 40px;">新增区域</button>
-        <button class="drawArea" style="width: 100px; height: 40px;">画面</button>
-        <button class="confirm" style="width: 100px; height: 40px;">确认新增区域</button>
+        <br>
+        <button class="drawArea" style="width: 100px; height: 40px; display: none">画面</button>
+        <br>
+        <button class="confirm" style="width: 100px; height: 40px; display: none">确认新增区域</button>
     </div>
 
-    <div style="float: left;width: 40px;height: 100px; padding-left: 100px">
+    <div id="change" style="float: left;width: auto;height: auto; padding-left: 100px">
         <button class="btn_change" onclick="changeArea()" style="width: 100px; height: 40px;">修改区域</button>
 
     </div>
-    <div style="float: left;width: 40px;height: 20px;padding-left: 100px">
+    <div id="delete" style="float: left;width: auto;height: auto;padding-left: 100px">
 
         <button class="btn_delete" onclick="deleteArea()" style="width: 100px; height: 40px;">删除区域</button>
     </div>
 </div>
 <script>
-
     var province;
     var city;
     var district;
@@ -81,15 +82,10 @@
         map.setCity("广东省");
     })
     window.onload = function () {
-
         province = $('#province1 option:selected').text();
-
         area = province;
-
         document.getElementById("lnglat").value = area;
-
     }
-
     var marker;
     var markerArray = new Array();
     var geocoder;
@@ -98,6 +94,8 @@
     var flag = false;
     var judgeArray = new Array();
     var addArea = function () {
+        $('.drawArea').show();
+        $('.confirm').show();
         AMap.service('AMap.Geocoder', function () {//回调函数
             //实例化Geocoder
             geocoder = new AMap.Geocoder({
@@ -105,10 +103,8 @@
             });
             //TODO: 使用geocoder 对象完成相关功能
         });
-
         map.on('click', drawMarker, 1);
     };
-
     var drawMarker = function (e) {
         marker = new AMap.Marker({
             map: map,
@@ -118,7 +114,6 @@
             raiseOnDrag: true,
             draggable: true,
         });
-
         geocoder.getAddress(e.lnglat, function (status, result) {
             if (status === 'complete' && result.info === 'OK') {
                 document.getElementById("lnglat").value = result.regeocode.formattedAddress;
@@ -129,26 +124,21 @@
                 document.getElementById("lnglat").value = "error";
             }
         });
-
         marker.on('dragging', move, 3);
         markerArray.push(marker);
     };
-
     var move = function () {
         drawArea();
         drawArea();
     };
-
     var changeArea = function () {
-
+        alert('changeArea');
     };
-
     var deleteArea = function () {
-
+        alert('delete');
     };
     $('.drawArea').click(function(){
         drawArea ();
-
     })
     function drawArea () {
         lnglatArray.splice(0, lnglatArray.length);
@@ -173,11 +163,23 @@
             flag = false;
             //polygon.setPath(lnglatArray);
         }
+        polygon.on('click', function (e) {
+            showInfoWindow(e);
+        });
     };
-
-
-
+    var infoWindow = new AMap.InfoWindow();
+    var showInfoWindow = function (e) {
+        var info = [];
+        var change = $('#change');
+        var de = $('#delete');
+        info.push(" <div id=\"delete\" style=\"float: left;width: auto;height: auto;\"> <button class=\"btn_delete\" onclick=\"deleteArea()\" style=\"width: 100px; height: 40px;\">删除区域</button> </div>");
+        info.push(" <div id=\"change\" style=\"float: left;width: auto;height: auto;\"> <button class=\"btn_change\" onclick=\"changeArea()\" style=\"width: 100px; height: 40px;\">修改区域</button> </div>");
+        infoWindow.setContent(info.join('<br/>'));
+        infoWindow.open(map, e.lnglat);
+    };
     var confirm = $('.confirm').click(function () {
+        $('.drawArea').hide();
+        $('.confirm').hide();
         for (var i =0; i<markerArray.length;i++) {
             var marker = markerArray[i];
             marker.hide();
@@ -185,7 +187,6 @@
         markerArray.splice(0, markerArray.length);
         map.off('click', drawMarker, 1);
     });
-
     var selected_2 = function () {
         province = document.getElementById("province1").value;
         city = document.getElementById("city1").value;
@@ -194,7 +195,6 @@
         document.getElementById("lnglat").value = area;
         map.setCity(city);
     }
-
     var selected = function () {
         province = document.getElementById("province1").value;
         city = document.getElementById("city1").value;
@@ -203,8 +203,6 @@
         map.setCity(district);
         document.getElementById("lnglat").value = area;
     }
-
-
 </script>
 
 
