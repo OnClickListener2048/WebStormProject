@@ -53,13 +53,9 @@
     </div>
 
     <div id="change" style="float: left;width: auto;height: auto; padding-left: 100px">
-        <button class="btn_change" onclick="changeArea()" style="width: 100px; height: 40px;">修改区域</button>
-
+        <button id="confirmChange" style="width: 100px; height: 40px; display: none">确认修改</button>
     </div>
-    <div id="delete" style="float: left;width: auto;height: auto;padding-left: 100px">
 
-        <button class="btn_delete" onclick="deleteArea()" style="width: 100px; height: 40px;">删除区域</button>
-    </div>
 </div>
 <script>
     var province;
@@ -87,15 +83,16 @@
         document.getElementById("lnglat").value = area;
     }
     var marker;
-    var markerArray = new Array();
+    var markerArray;
     var geocoder;
-    var lnglatArray = new Array();
+    var lnglatArray;
     var polygon;
     var flag = false;
     var judgeArray = new Array();
     var addArea = function () {
+        markerArray = new Array();
+        lnglatArray = new Array();
         $('.drawArea').show();
-        $('.confirm').show();
         AMap.service('AMap.Geocoder', function () {//回调函数
             //实例化Geocoder
             geocoder = new AMap.Geocoder({
@@ -132,15 +129,32 @@
         drawArea();
     };
     var changeArea = function () {
-        alert('changeArea');
+        $("#confirmChange").show();
+        polygon.off('click', showWindow, 20);
+        hideInfoWindow();
+        for (var i = 0; i < markerArray.length; i++) {
+            var marker = markerArray[i];
+            marker.show();
+        }
+        flag = true;
     };
     var deleteArea = function () {
-        alert('delete');
+        var confirmResult = confirm("确认删除区域？");
+        if (confirmResult === true) {
+            polygon.setMap(null);
+            hideInfoWindow();
+        }
     };
-    $('.drawArea').click(function(){
-        drawArea ();
+    $('.drawArea').click(function () {
+        drawArea();
     })
-    function drawArea () {
+
+
+    function drawArea() {
+        if (markerArray.length < 3) {
+            alert("请画出大于三个点");
+            return;
+        }
         lnglatArray.splice(0, lnglatArray.length);
         for (var i = 0; i < markerArray.length; i++) {
             var marker = markerArray[i];
@@ -152,9 +166,9 @@
                 map: map,
                 path: lnglatArray,
                 bubble: true,
-                strokeWeight:0,
-                fillOpacity:0.5,
-                fillColor:'#6495ED',
+                strokeWeight: 0,
+                fillOpacity: 0.5,
+                fillColor: '#6495ED',
             });
             flag = true;
         } else {
@@ -163,12 +177,23 @@
             flag = false;
             //polygon.setPath(lnglatArray);
         }
-        polygon.on('click', function (e) {
-            showInfoWindow(e);
-        });
+        $('.confirm').show();
+        polygon.on('click', showWindow, 20);
     };
+
+    function showWindow(e) {
+        showInfoWindow(e);
+    }
+
+    var hideInfoWindow = function () {
+        infoWindow.close();
+    };
+
     var infoWindow = new AMap.InfoWindow();
     var showInfoWindow = function (e) {
+        polygon = e.target;
+        markerArray = polygon.getExtData().array;
+        lnglatArray = polygon.getExtData().lnglat;
         var info = [];
         var change = $('#change');
         var de = $('#delete');
@@ -177,15 +202,40 @@
         infoWindow.setContent(info.join('<br/>'));
         infoWindow.open(map, e.lnglat);
     };
-    var confirm = $('.confirm').click(function () {
+
+    $("#confirmChange").click(function () {
+        polygon.on('click', showWindow, 20);
+        $("#confirmChange").hide();
         $('.drawArea').hide();
         $('.confirm').hide();
-        for (var i =0; i<markerArray.length;i++) {
+        for (var i = 0; i < markerArray.length; i++) {
             var marker = markerArray[i];
             marker.hide();
         }
-        markerArray.splice(0, markerArray.length);
+        polygon.setExtData({
+            array: markerArray,
+            lnglat: lnglatArray,
+        });
+        polygon.id = 111;
         map.off('click', drawMarker, 1);
+        flag = false;
+    });
+
+    var confirmArea = $('.confirm').click(function () {
+        $("#confirmChange").hide();
+        $('.drawArea').hide();
+        $('.confirm').hide();
+        for (var i = 0; i < markerArray.length; i++) {
+            var marker = markerArray[i];
+            marker.hide();
+        }
+        polygon.setExtData({
+            array: markerArray,
+            lnglat: lnglatArray,
+        });
+        polygon.id = 111;
+        map.off('click', drawMarker, 1);
+        flag = false;
     });
     var selected_2 = function () {
         province = document.getElementById("province1").value;
